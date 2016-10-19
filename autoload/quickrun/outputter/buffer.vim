@@ -58,9 +58,9 @@ function! s:outputter.output(data, session) abort
 
   call s:normalize_fileformat(self._crlf, self._lf)
 
-  if &l:fileformat ==# 'dos'
+  "if &l:fileformat ==# 'dos'
     let data = substitute(data, "\r\n", "\n", 'g')
-  endif
+  "endif
 
   if data =~# '\n$'
     " :put command do not insert the last line.
@@ -130,7 +130,7 @@ endfunction
 function! s:normalize_fileformat(crlf, lf) abort
   " XXX Do not care `fileformat=mac`
   if &l:fileformat ==# 'unix' && a:crlf && !a:lf
-    setlocal fileformat=dos
+    "setlocal fileformat=dos
   elseif &l:fileformat ==# 'dos' && a:lf
     setlocal fileformat=unix
     for lnum in range(1, line('$'))
