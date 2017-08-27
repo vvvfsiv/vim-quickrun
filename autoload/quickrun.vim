@@ -76,13 +76,6 @@ let g:quickrun#default_config = {
 \   'command': 'clj',
 \   'exec': '%c %s %a',
 \ },
-\ 'clojure/process_manager': {
-\   'command': 'clojure-1.6',
-\   'cmdopt': '-e ''(clojure.main/repl :prompt #(print "\nquickrun/pm=> "))''',
-\   'runner': 'process_manager',
-\   'runner/process_manager/load': '(load-file "%S")',
-\   'runner/process_manager/prompt': 'quickrun/pm=> ',
-\ },
 \ 'clojure/concurrent_process': {
 \   'command': 'clojure-1.6',
 \   'cmdopt': '-e ''(clojure.main/repl :prompt #(print "\nquickrun/cp=> "))''',
@@ -188,7 +181,7 @@ let g:quickrun#default_config = {
 \ },
 \ 'dosbatch': {
 \   'command': 'cmd',
-\   'exec': '%c /c "call %s %a"',
+\   'exec': '%c /c %s %a',
 \   'hook/output_encode/encoding': 'cp932',
 \   'tempfile': '%{tempname()}.bat',
 \ },
@@ -322,14 +315,18 @@ let g:quickrun#default_config = {
 \     'class _Main { static function main(args : string[]) :void { %s }}',
 \ },
 \ 'kotlin': {
-\   'exec': [
-\     'kotlinc-jvm %s -d %s:p:r.jar',
-\     'java -Xbootclasspath/a:%{shellescape(fnamemodify(' .
-\       'fnamemodify(g:quickrun#V.System.Filepath.which("kotlinc-jvm"), ":h") . "/../lib/kotlin-runtime.jar", ":p"))}' .
-\       ' -jar %s:p:r.jar'
-\   ],
+\    'command': 'java',
+\    'exec': ['kotlinc %o %s -include-runtime -d %s:p:r.jar', '%c -jar %s:p:r.jar'],
+\    'tempfile': '%{tempname()}.kt',
+\    'hook/sweep/files': '%S:p:r.jar'
+\ },
+\ 'kotlin/concurrent_process': {
+\   'command': 'kotlinc-jvm',
+\   'exec': '%c',
 \   'tempfile': '%{tempname()}.kt',
-\   'hook/sweep/files': ['%S:p:r.jar'],
+\   'runner': 'concurrent_process',
+\   'runner/concurrent_process/load': ':load %S',
+\   'runner/concurrent_process/prompt': '>>> ',
 \ },
 \ 'lisp': {
 \   'type' : executable('sbcl') ? 'lisp/sbcl':
@@ -405,6 +402,13 @@ let g:quickrun#default_config = {
 \ 'perl6': {'hook/eval/template': '{%s}().perl.print'},
 \ 'python': {'hook/eval/template': 'print(%s)'},
 \ 'php': {},
+\ 'pony': {
+\   'command': 'ponyc',
+\   'exec': ['%c -V 0 %o', '%s:p:h/%s:p:h:t %a'],
+\   'tempfile': '%{tempname()}.pony',
+\   'hook/sweep/files': ['%S:p:h/%S:p:h:t'],
+\   'hook/cd/directory': '%S:p:h',
+\ },
 \ 'ps1': {
 \   'exec': '%c %o -File %s %a',
 \   'command': 'powershell.exe',
@@ -423,39 +427,34 @@ let g:quickrun#default_config = {
 \ 'ruby': {'hook/eval/template': " p proc {\n%s\n}.call"},
 \ 'ruby/irb': {
 \   'command': 'irb',
-\   'exec': '%c %o --simple-prompt',
-\   'runner': 'process_manager',
-\   'runner/process_manager/load': "load '%s'",
-\   'runner/process_manager/prompt': '>> ',
+\   'cmdopt': '--simple-prompt',
+\   'runner': 'concurrent_process',
+\   'runner/concurrent_process/load': "load %s",
+\   'runner/concurrent_process/prompt': '>> ',
 \ },
 \ 'ruby/pry': {
 \   'command': 'pry',
-\   'exec': '%c %o --no-color --simple-prompt',
-\   'runner': 'process_manager',
-\   'runner/process_manager/load': "load '%s'",
-\   'runner/process_manager/prompt': '>> ',
+\   'cmdopt': '--no-color --simple-prompt',
+\   'runner': 'concurrent_process',
+\   'runner/concurrent_process/load': "load %s",
+\   'runner/concurrent_process/prompt': '>> ',
 \ },
 \ 'rust': {
 \   'command': 'rustc',
 \   'exec': ['%c %o %s -o %s:p:r', '%s:p:r %a'],
 \   'tempfile': '%{tempname()}.rs',
+\   'hook/shebang/enable': 0,
 \   'hook/sweep/files': '%S:p:r',
 \ },
 \ 'rust/cargo': {
 \   'command': 'cargo',
 \   'exec': '%c run %o',
+\   'hook/shebang/enable': 0,
 \ },
 \ 'scala': {
 \   'exec': ['scalac %o -d %s:p:h %s', '%c -cp %s:p:h %s:t:r %a'],
 \   'hook/output_encode/encoding': '&termencoding',
 \   'hook/sweep/files': '%S:p:r.class',
-\ },
-\ 'scala/process_manager': {
-\   'command': 'scala',
-\   'cmdopt': '-nc',
-\   'runner': 'process_manager',
-\   'runner/process_manager/load': ':load %S',
-\   'runner/process_manager/prompt': 'scala> ',
 \ },
 \ 'scala/concurrent_process': {
 \   'command': 'scala',
